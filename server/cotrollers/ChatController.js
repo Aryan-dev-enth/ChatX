@@ -9,12 +9,13 @@ import User from "../models/userModel.js";
 class ChatController {
   static accessChat = async (req, res) => {
     const { userId } = req.body;
+
     if (!userId) {
-      return messageHandler(res, "Params not set.");
+      return messageHandler(res, "User ID not provided.");
     }
 
     try {
-      var isChat = await Chat.find({
+      let isChat = await Chat.find({
         isGroupChat: false,
         $and: [
           { users: { $elemMatch: { $eq: req.user._id } } },
@@ -30,10 +31,19 @@ class ChatController {
       });
 
       if (isChat.length > 0) {
-        return successHandler(res, isChat[0], "Chat retrieved.");
+        return successHandler(res, isChat[0], "Chat retrieved successfully.");
       } else {
-        var chatData = {
-          chatName: "sender",
+        const currentUser = await User.findById(req.user._id).select("name");
+        const targetUser = await User.findById(userId).select("name");
+
+        if (!currentUser || !targetUser) {
+          return messageHandler(res, "One or both users not found.");
+        }
+
+        const chatName = `${targetUser.name}`;
+
+        const chatData = {
+          chatName,
           isGroupChat: false,
           users: [req.user._id, userId],
         };
@@ -43,14 +53,16 @@ class ChatController {
           "users",
           "-password"
         );
-        return successHandler(res, fullChat, "Chat retrieved");
+
+        return successHandler(res, fullChat, "New chat created successfully.");
       }
     } catch (error) {
+      console.error("Error accessing chat:", error);
       return errorHandler(res, error);
     }
   };
-
   static fetchChats = async (req, res) => {
+  
     try {
       const chats = await Chat.find({
         users: { $elemMatch: { $eq: req.user._id } },
@@ -71,6 +83,7 @@ class ChatController {
     }
   };
   static createGroup = async (req, res) => {
+    
     if (!req.body.users || !req.body.name) {
       messageHandler(res, "All fields required.");
     }

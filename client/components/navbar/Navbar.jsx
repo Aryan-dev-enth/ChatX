@@ -5,25 +5,16 @@ import { motion } from "framer-motion";
 import { navLinks } from "@/constant";
 import Link from "next/link";
 import MobileNavbar from "./MobileNavbar";
-import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChatState } from "@/context/ChatProvider";
-import { Input } from "../ui/input";
+
+import ThemeToggle from "../ThemeToggle";
+
 
 const Navbar = () => {
   const [isOpen, setOpen] = useState(false);
-  const { setTheme } = useTheme();
-  const {user} = ChatState();
+
 
   return (
-    <div className="w-full fixed top-0 z-50 bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-0 orbitron-bold text-black dark:text-white">
+    <div className="w-full fixed top-0 z-40 bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-0 orbitron-bold text-black dark:text-white">
       <div className="w-full flex justify-between items-center h-[75px] px-6 lg:px-20">
         <motion.div
           initial={{ opacity: 0, x: -100 }}
@@ -40,12 +31,7 @@ const Navbar = () => {
               className="rounded-full"
             />
           </Link>
-          {!!user && (
-            <Input 
-            type="text"
-            placeholder="Add users"
-            />
-          )}
+         
         </motion.div>
         <motion.div
           initial={{ opacity: 0, x: 100 }}
@@ -64,27 +50,9 @@ const Navbar = () => {
                 <span className="animated-line"></span>
               </Link>
             ))}
+            
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setTheme("light")}>
-                Light
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")}>
-                Dark
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")}>
-                System
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ThemeToggle />
         </motion.div>
         <motion.div
           initial={{ opacity: 0, x: 100 }}
@@ -92,26 +60,7 @@ const Navbar = () => {
           transition={{ duration: 0.5 }}
           className="lg:hidden flex justify-center items-center gap-2 flex-row-reverse"
         >
-             <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setTheme("light")}>
-                Light
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")}>
-                Dark
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")}>
-                System
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <ThemeToggle />
           <Hamburger toggled={isOpen} toggle={setOpen} color="currentColor" />
         </motion.div>
       </div>

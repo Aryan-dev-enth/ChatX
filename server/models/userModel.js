@@ -19,7 +19,7 @@ const userModel = new Schema({
   pfp: {
     type: String,
     required: true,
-    default: 'https://img.freepik.com/free-icon/user_318-804790.jpg'
+    default: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?cs=srgb&dl=pexels-pixabay-220453.jpg&fm=jpg'
   }
 },{
     timestamps: true

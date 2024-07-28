@@ -14,7 +14,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={inter.className} >
         <ChatProvider>
           <ThemeProvider
             attribute="class"
@@ -22,8 +22,10 @@ export default function RootLayout({ children }) {
             enableSystem
             disableTransitionOnChange
           >
-            <Navbar />
+            <div className="w-screen min-h-screen noto-sans-normal">
+        
             {children}
+            </div>
           </ThemeProvider>
         </ChatProvider>
       </body>

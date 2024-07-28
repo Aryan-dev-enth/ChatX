@@ -3,8 +3,8 @@ import Navbar from "@/components/navbar/Navbar";
 
 export default function Home() {
   return (
-    <div className='w-screen min-h-screen bg-background '>
-
+    <div className='w-full h-full bg-background'>
+            <Navbar />
       <Landing />
     </div>
   );
