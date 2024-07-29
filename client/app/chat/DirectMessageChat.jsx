@@ -9,7 +9,7 @@ import { io } from "socket.io-client";
 import { Dot } from "lucide-react";
 import ChatSkeleton from "./ChatSkeleton";
 
-const BASE_URL = "http://localhost:8000";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 var socket, selectedChatCompare;
 
 const DirectMessageChat = ({ selectedChat }) => {
