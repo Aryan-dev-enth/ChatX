@@ -2,9 +2,13 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import React from "react";
-import { navLinks } from "../../constant";
-
+import { ChatState } from "@/context/ChatProvider";
 const MobileNavbar = () => {
+  const {user, setUser} = ChatState();
+  const handleOnLogout = () => {
+    localStorage.removeItem("userInfo");
+    setUser(null);
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: -100 }}
@@ -14,16 +18,24 @@ const MobileNavbar = () => {
     >
       <div className="flex flex-col justify-center items-center gap-2 tracking-wider">
         
-        {navLinks.map((link, index) => (
-          <Link
-            key={index}
-            href={link.href}
-            className="navbar-link text-primary font-bold px-3 py-2  text-sm relative border-b-[1px] "
-          >
-            {link.label}
-            <span className="animated-line"></span>
-          </Link>
-        ))}
+      {user ? (
+              <Link
+                href="/login"
+                className="navbar-link text-primary font-bold px-3 py-2 rounded-md text-sm relative"
+                onClick={handleOnLogout}
+              >
+                Logout
+                <span className="animated-line"></span>
+              </Link>
+            ) : (
+              <Link
+                href="/register"
+                className="navbar-link text-primary font-bold px-3 py-2 rounded-md text-sm relative"
+              >
+                Register
+                <span className="animated-line"></span>
+              </Link>
+            )}
         
       </div>
      

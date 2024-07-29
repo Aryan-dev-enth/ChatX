@@ -1,17 +1,28 @@
-'use client';
-import { useState } from "react";
+"use client";
+import { useState, useEffect } from "react";
 import { Turn as Hamburger } from "hamburger-react";
 import { motion } from "framer-motion";
-import { navLinks } from "@/constant";
+import { ChatState } from "@/context/ChatProvider";
 import Link from "next/link";
 import MobileNavbar from "./MobileNavbar";
-
 import ThemeToggle from "../ThemeToggle";
-
 
 const Navbar = () => {
   const [isOpen, setOpen] = useState(false);
+  const { user, setUser } = ChatState();
+  
 
+  const handleOnLogout = () => {
+    localStorage.removeItem("userInfo");
+    setUser(null);
+  };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("userInfo");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, [setUser]);
 
   return (
     <div className="w-full fixed top-0 z-40 bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-0 orbitron-bold text-black dark:text-white">
@@ -31,7 +42,6 @@ const Navbar = () => {
               className="rounded-full"
             />
           </Link>
-         
         </motion.div>
         <motion.div
           initial={{ opacity: 0, x: 100 }}
@@ -40,17 +50,24 @@ const Navbar = () => {
           className="hidden lg:flex items-center gap-10"
         >
           <div className="flex gap-5 tracking-wider">
-            {navLinks.map((link, index) => (
+            {user ? (
               <Link
-                key={index}
-                href={link.href}
+                href="/login"
                 className="navbar-link text-primary font-bold px-3 py-2 rounded-md text-sm relative"
+                onClick={handleOnLogout}
               >
-                {link.label}
+                Logout
                 <span className="animated-line"></span>
               </Link>
-            ))}
-            
+            ) : (
+              <Link
+                href="/register"
+                className="navbar-link text-primary font-bold px-3 py-2 rounded-md text-sm relative"
+              >
+                Register
+                <span className="animated-line"></span>
+              </Link>
+            )}
           </div>
           <ThemeToggle />
         </motion.div>
@@ -60,7 +77,7 @@ const Navbar = () => {
           transition={{ duration: 0.5 }}
           className="lg:hidden flex justify-center items-center gap-2 flex-row-reverse"
         >
-            <ThemeToggle />
+          <ThemeToggle />
           <Hamburger toggled={isOpen} toggle={setOpen} color="currentColor" />
         </motion.div>
       </div>

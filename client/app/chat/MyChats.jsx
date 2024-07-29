@@ -1,14 +1,13 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { ChatState } from "@/context/ChatProvider";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import GroupChatModal from "@/components/miscellaneous/GroupChatModal";
 
 const MyChats = () => {
   const { user, setSelectedChat, selectedChat } = ChatState();
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState([]);
 
   const fetchChats = async () => {
     try {
@@ -33,6 +32,10 @@ const MyChats = () => {
     fetchChats();
   }, [user, selectedChat]);
 
+  if(!user){
+    return <></>
+  }
+
   return (
     <div className="flex flex-col p-4 bg-background h-full">
       <h2 className="text-xl font-bold mb-4">My Chats</h2>
@@ -40,18 +43,23 @@ const MyChats = () => {
         <Button className="mb-8">Group Chat</Button>
       </GroupChatModal>
       <div className="space-y-2">
-        {!!result &&
-          result.map((chat) => (
+        {result.map((chat) => {
+          // Determine the display name for the chat
+          const chatName =
+            chat.chatName === user.user.name
+              ? chat.users.find((u) => u.name !== user.user.name)?.name
+              : chat.chatName;
+
+          return (
             <div
               key={chat._id}
               className="p-4 border rounded-lg shadow-md cursor-pointer hover:bg-primary-foreground transition"
-              onClick={() => {
-                setSelectedChat(chat);
-              }}
+              onClick={() => setSelectedChat(chat)}
             >
-              <h3 className="font-semibold">{chat.chatName}</h3>
+              <h3 className="font-semibold">{chatName}</h3>
             </div>
-          ))}
+          );
+        })}
       </div>
     </div>
   );
