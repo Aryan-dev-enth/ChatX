@@ -5,13 +5,39 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import { ChatState } from "@/context/ChatProvider";
+import { io } from "socket.io-client";
+import { Dot } from "lucide-react";
+
+const BASE_URL = "http://localhost:8000";
+var socket, selectedChatCompare;
 
 const DirectMessageChat = ({ selectedChat }) => {
   const { user } = ChatState();
   const { toast } = useToast();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
-  const endOfMessagesRef = useRef(null); // Create a ref for the end of messages
+  const [socketConnected, setsocketConnected] = useState(false);
+  const [isTyping, setisTyping] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const endOfMessagesRef = useRef(null);
+
+  useEffect(() => {
+    socket = io(BASE_URL);
+    socket.emit("setup", user.user);
+
+    socket.on("connected", () => {
+      setsocketConnected(true);
+    });
+
+    socket.on('typing', ()=>{
+      setisTyping(true);
+
+    });
+    socket.on('stop typing', ()=>{
+      setisTyping(false);
+
+    });
+  }, []);
 
   const fetchMessages = async () => {
     const config = {
@@ -33,6 +59,8 @@ const DirectMessageChat = ({ selectedChat }) => {
           description: result.data.message,
           type: "success",
         });
+
+        socket.emit("join chat", selectedChat._id);
       } else {
         toast({
           title: "Data Error",
@@ -53,7 +81,21 @@ const DirectMessageChat = ({ selectedChat }) => {
     if (selectedChat) {
       fetchMessages();
     }
+    selectedChatCompare = selectedChat;
   }, [selectedChat]);
+
+  useEffect(() => {
+    socket.on("message received", (newMessageReceived) => {
+      if (
+        !selectedChatCompare ||
+        selectedChatCompare._id !== newMessageReceived.chat._id
+      ) {
+        //notification
+      } else {
+        setMessages([...messages, newMessageReceived]);
+      }
+    });
+  });
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -83,11 +125,16 @@ const DirectMessageChat = ({ selectedChat }) => {
       if (result.data.status === "success") {
         setMessages((prevMessages) => [...prevMessages, result.data.data]);
         setNewMessage("");
+        socket.emit('stop typing', selectedChat._id);
         toast({
           title: "Sent successfully",
           description: result.data.message,
           type: "success",
         });
+
+        console.log(result.data.data);
+        socket.emit("new message", result.data.data);
+        setTyping(false)
       } else {
         toast({
           title: "Send Error",
@@ -110,8 +157,8 @@ const DirectMessageChat = ({ selectedChat }) => {
       handleSend();
     }
   };
-  if(!user){
-    return <></>
+  if (!user) {
+    return <></>;
   }
 
   return (
@@ -119,7 +166,13 @@ const DirectMessageChat = ({ selectedChat }) => {
       <div className="flex items-center justify-between border-b pb-2 mb-4 px-4">
         <h2 className="text-xl font-semibold capitalize">
           {selectedChat.chatName}
+          {isTyping?(
+          <p className="text-xs ">Typing...</p>
+        ):(
+          <></>
+        )}
         </h2>
+       
         <EyeIcon />
       </div>
       <div className="flex flex-col flex-grow overflow-y-auto space-y-4 px-4 py-2">
@@ -130,7 +183,9 @@ const DirectMessageChat = ({ selectedChat }) => {
             <div
               key={index}
               className={`flex ${
-                msg.sender._id === user.user._id ? "justify-end" : "justify-start"
+                msg.sender._id === user.user._id
+                  ? "justify-end"
+                  : "justify-start"
               }`}
             >
               <div
@@ -149,12 +204,33 @@ const DirectMessageChat = ({ selectedChat }) => {
         <div ref={endOfMessagesRef} />
       </div>
       <div className="mt-4 flex items-center justify-between gap-2 px-4">
+        
         <input
           type="text"
           placeholder="Type a message..."
           value={newMessage}
           className="w-full px-4 py-2 border rounded-lg focus:outline-none"
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={(e) =>{
+            setNewMessage(e.target.value);
+            if(!socketConnected){
+              return;
+
+            }
+            if(!typing){
+              setTyping(true);
+              socket.emit('typing', selectedChat._id);
+            }
+            let lastTypingTime = new Date().getTime();
+            var timerLength = 1500;
+            setTimeout(()=>{
+              var timeNow = new Date().getTime();
+              var timeDifference = timeNow - lastTypingTime;
+              if(timeDifference>=timerLength && typing){
+                socket.emit('stop typing', selectedChat._id)
+                setTyping(false)
+              }
+            }, timerLength);
+          }}
           onKeyDown={handleKeyDown}
         />
         <Button size="sm" onClick={handleSend}>
