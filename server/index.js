@@ -50,7 +50,7 @@ const server = app.listen(port, () => {
 io.attach(server);
 
 io.on("connection", (socket) => {
-    console.log("Connected to socket");
+    
 
     socket.on('setup', (userData)=>{
         socket.join(userData._id);
@@ -73,7 +73,7 @@ io.on("connection", (socket) => {
     socket.on('new message',(newMessageReceived)=>{
         var chat = newMessageReceived.chat;
         if(!chat.users){
-            return console.log("chat.users not defined");
+            return ;
         }
 
         chat.users.forEach(user=>{

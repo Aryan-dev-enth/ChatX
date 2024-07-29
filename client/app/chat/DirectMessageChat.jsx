@@ -7,6 +7,7 @@ import axios from "axios";
 import { ChatState } from "@/context/ChatProvider";
 import { io } from "socket.io-client";
 import { Dot } from "lucide-react";
+import ChatSkeleton from "./ChatSkeleton";
 
 const BASE_URL = "http://localhost:8000";
 var socket, selectedChatCompare;
@@ -20,6 +21,7 @@ const DirectMessageChat = ({ selectedChat }) => {
   const [isTyping, setisTyping] = useState(false);
   const [typing, setTyping] = useState(false);
   const endOfMessagesRef = useRef(null);
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     socket = io(BASE_URL);
@@ -48,6 +50,7 @@ const DirectMessageChat = ({ selectedChat }) => {
     };
 
     try {
+      setLoading(true);
       const result = await axios.get(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/message/${selectedChat._id}`,
         config
@@ -75,6 +78,7 @@ const DirectMessageChat = ({ selectedChat }) => {
         type: "error",
       });
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -126,13 +130,8 @@ const DirectMessageChat = ({ selectedChat }) => {
         setMessages((prevMessages) => [...prevMessages, result.data.data]);
         setNewMessage("");
         socket.emit('stop typing', selectedChat._id);
-        toast({
-          title: "Sent successfully",
-          description: result.data.message,
-          type: "success",
-        });
+       
 
-        console.log(result.data.data);
         socket.emit("new message", result.data.data);
         setTyping(false)
       } else {
@@ -159,6 +158,11 @@ const DirectMessageChat = ({ selectedChat }) => {
   };
   if (!user) {
     return <></>;
+  }
+  if(loading){
+    return <div className="pt-32">
+      <ChatSkeleton/>
+    </div>;
   }
 
   return (
